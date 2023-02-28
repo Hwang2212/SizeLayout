@@ -7,13 +7,15 @@ class PrintImageModel {
   final int imageFittable;
   int maxRowAllowable;
   int maxColumnAllowable;
-  final double? minHorizontalSpacing;
+  double minVerticalSpacing;
+  double minHorizontalSpacing;
   PrintImageModel(
       {required this.paperSize,
       required this.imageSize,
       required this.printHorizontal,
       this.maxRowAllowable = 2,
       this.maxColumnAllowable = 2,
-      this.minHorizontalSpacing,
+      this.minHorizontalSpacing = 24,
+      this.minVerticalSpacing = 59,
       required this.imageFittable});
 }
