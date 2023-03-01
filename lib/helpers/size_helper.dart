@@ -10,39 +10,68 @@ class SizeHelper {
   Future<PrintImageModel> printPreview(
       SizeModel paperSize, SizeModel imageSize) async {
     // Rearrange width and height where width < height
-    SizeModel paper = checkSize(paperSize);
-    SizeModel image = checkSize(imageSize);
+    SizeModel paper = rearrangeSize(paperSize);
+    SizeModel image = rearrangeSize(imageSize);
     bool horizontal = false;
     // 0.5cm or 5mm Vertical Margin
     // To leave WhiteSpace between images
     horizontal = false;
-    if (image.height >= ((paper.width * 0.95) / 2)) {
+
+    // Rotate paper to Vertical if image's height more than paper's width
+    if (image.height >= ((paper.width * 0.975) / 2)) {
       // paper width > 1200 and image height > half of 95% paper's width
+      int imageFitCount = 2;
+      int maxRowAllowable = 2;
+      int maxColumnAllowable = 2;
+      if ((image.width) > ((paper.width * 0.95) / 2) &&
+          image.height < (paper.height * 0.975 / 2)) {
+        imageFitCount = 2;
+        maxRowAllowable = 2;
+        maxColumnAllowable = (imageFitCount / maxRowAllowable).floor();
+      } else if ((image.width) > ((paper.width * 0.95) / 2) &&
+          image.height > (paper.height * 0.975 / 2)) {
+        imageFitCount = 1;
+        maxRowAllowable = 1;
+        maxColumnAllowable = (imageFitCount / maxRowAllowable).floor();
+      } else if ((image.width) < ((paper.width * 0.95) / 2) &&
+          image.height > (paper.height * 0.975 / 2)) {
+        imageFitCount = 2;
+        maxRowAllowable = 1;
+        maxColumnAllowable = (imageFitCount / maxRowAllowable).floor();
+      } else {
+        imageFitCount = 4;
+        maxRowAllowable = 2;
+        maxColumnAllowable = (imageFitCount / maxRowAllowable).floor();
+      }
       return PrintImageModel(
           paperSize: paper,
           imageSize: image,
           printHorizontal: false,
-          imageFittable: 4);
+          maxColumnAllowable: maxColumnAllowable,
+          maxRowAllowable: maxRowAllowable,
+          imageFittable: imageFitCount);
     } else {
       int imageFittable = await calculateImageFitable(paper, image);
 
       // double getPaperAspectRatio = await _calculatePaperAspectRatio(paper);
       horizontal = await _verifyPaperOrientation(imageFittable);
       if (horizontal) {
-        int imagePerColumnAllowable = (paper.width / image.height).floor();
-        int imagePerRowAllowable = (paper.height / image.width).floor();
+        int imagePerColumnAllowable =
+            (paper.width * 0.95 / image.height).floor();
+        int imagePerRowAllowable = (paper.height * 0.95 / image.width).floor();
         log(imagePerColumnAllowable.toString());
         int maxRows =
             await _calculateMaxRow(imageFittable, imagePerRowAllowable);
         int maxColumns =
             await _calculateMaxColumn(imageFittable, imagePerColumnAllowable);
-        log("ImagColimn ${maxColumns.toString()}");
+        log("ImageRow ${maxRows.toString()}");
+        log("ImageColumns ${maxColumns.toString()}");
         return PrintImageModel(
             paperSize: paper,
             imageSize: image,
             printHorizontal: horizontal,
-            maxRowAllowable: maxRows,
             maxColumnAllowable: maxColumns,
+            maxRowAllowable: maxRows,
             imageFittable: imageFittable);
       } else {
         return PrintImageModel(
@@ -57,24 +86,28 @@ class SizeHelper {
   // Image Count
   Future<int> calculateImageFitable(
       SizeModel paperSize, SizeModel imageSize) async {
+    double minVerticalSpacing = 25;
+    double minHorizontalSpacing = 10;
     double paperArea = _calculateArea(paperSize.width, paperSize.height);
-    double imageArea = _calculateArea(imageSize.width, imageSize.height);
+    double imageArea = _calculateArea(imageSize.width + minHorizontalSpacing,
+        imageSize.height + minVerticalSpacing);
 
-    int imageFitable = (paperArea / imageArea)
+    int imageFitable = (paperArea * 0.90 / imageArea)
         .floor(); // Get the floor number eg: 7.82 ~= 7, 5.1 ~= 5
+    log("imageFitable $imageFitable");
     return imageFitable;
   }
 
   // Max Row Count
   Future<int> _calculateMaxRow(int imageFittable, int imagePerRow) async {
-    int rowAllowed = (imageFittable / imagePerRow).floor();
+    int rowAllowed = (imageFittable / imagePerRow).ceil();
 
     return rowAllowed;
   }
 
   // Max Column Count
   Future<int> _calculateMaxColumn(int imageFittable, int imagePerColumn) async {
-    int columnAllowed = (imageFittable / imagePerColumn).floor();
+    int columnAllowed = (imageFittable / imagePerColumn).ceil();
 
     return columnAllowed;
   }
@@ -94,6 +127,7 @@ class SizeHelper {
   }
 
   // Calculate Aspect Ratio of Paper Size
+  //Not using
   Future<double> _calculatePaperAspectRatio(SizeModel paperSize) async {
     if (paperSize.width.compareTo(paperSize.height) == 0) {
       return 1.0;
@@ -106,7 +140,7 @@ class SizeHelper {
     }
   }
 
-  SizeModel checkSize(SizeModel sizeModel) {
+  static SizeModel rearrangeSize(SizeModel sizeModel) {
     if (sizeModel.width.compareTo(sizeModel.height) == 0) {
       return sizeModel;
     } else if (sizeModel.width.compareTo(sizeModel.height) < 0) {

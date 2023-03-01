@@ -15,7 +15,7 @@ class PrintImageModel {
       required this.printHorizontal,
       this.maxRowAllowable = 2,
       this.maxColumnAllowable = 2,
-      this.minHorizontalSpacing = 24,
-      this.minVerticalSpacing = 59,
+      this.minHorizontalSpacing = 10,
+      this.minVerticalSpacing = 25,
       required this.imageFittable});
 }
