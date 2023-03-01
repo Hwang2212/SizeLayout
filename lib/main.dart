@@ -68,6 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget buildPrintPreview(
       {required SizeModel paperSize, required SizeModel imageSize}) {
     SizeHelper().printPreview(paperSize, imageSize).then((printImageModel) {
+      PrintingCountProvider printingCountProvider =
+          context.read<PrintingCountProvider>();
       printImageModelNotifier.value = printImageModel;
       int rows = printImageModel.maxRowAllowable;
       int columns = printImageModel.maxColumnAllowable;
@@ -82,11 +84,10 @@ class _MyHomePageState extends State<MyHomePage> {
         tempMap.addAll(t);
       }
       log("TempMap ${tempMap.toString()}");
-      PrintingCountProvider printingCountProvider =
-          context.read<PrintingCountProvider>();
 
-      // Notify Providers
+      // Notify Provider
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        printingCountProvider.printImageModel = printImageModel;
         printingCountProvider.imageCountInPaper =
             printImageModel.maxRowAllowable *
                 printImageModel.maxColumnAllowable;
@@ -108,149 +109,125 @@ class _MyHomePageState extends State<MyHomePage> {
             const Center(child: Text("Image Size Already Exceeded Paper Size")),
       );
     } else {
-      return ValueListenableBuilder(
-          valueListenable: printImageModelNotifier,
-          builder: (context, value, child) {
-            if (value == null) {
-              return Container(
-                width: paperSize.width,
-                height: paperSize.height,
-                color: Colors.blue,
-                child: const Center(child: Text("No Data")),
-              );
-            } else {
-              if (value.printHorizontal) {
-                log("Horizontal ${value.maxColumnAllowable.toString()}");
-                List<Widget> listt =
-                    List.generate(value.maxRowAllowable, (index) {
-                  List<Widget> columnList =
-                      List.generate(value.maxColumnAllowable, (index) {
-                    return Container(
-                      margin: EdgeInsets.symmetric(
-                          horizontal: value.minHorizontalSpacing / 2,
-                          vertical: value.minVerticalSpacing / 2),
-                      width: value.imageSize.width,
-                      height: value.imageSize.height,
-                      color: Colors.red,
-                      child: Image.asset(
-                        "assets/chinese.jpeg",
-                        fit: BoxFit.cover,
-                      ),
-                    );
-                  });
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [...columnList],
-                  );
-                });
+      return Consumer<PrintingCountProvider>(
+          builder: (context, provider, child) {
+        PrintImageModel? value = provider.printImageModel;
+        Map<String, List> listCount = provider.mappy;
+        List<Widget> rowList = [];
+        List<Widget> colList = [];
 
-                return Column(
-                  children: [
-                    Container(
-                      width: value.paperSize.height,
-                      height: value.paperSize.width,
-                      color: Colors.blue,
-                      child: Column(
-                        children: [
-                          ...listt,
-                        ],
-                      ),
-                    ),
-                    Consumer<PrintingCountProvider>(
-                        builder: (ctx, provider, child) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                              iconSize: 48,
-                              // color: Colors.yellow,
-                              onPressed: provider.minusCount,
-                              icon: const Icon(Icons.remove_circle)),
-                          Text(
-                            provider.imageCountInPaper.toString(),
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 24),
-                          ),
-                          IconButton(
-                              // color: Colors.yellow,
-                              iconSize: 48,
-                              onPressed: provider.addCount,
-                              icon: const Icon(Icons.add_circle)),
-                        ],
-                      );
-                    })
-                  ],
-                );
-              } else {
-                List<Widget> listt =
-                    List.generate(value.maxRowAllowable, (index) {
-                  return Row(
+        for (var i = 0; i < listCount.length; i++) {
+          log("list${i + 1} ${listCount["list${i + 1}"].toString()}");
+          colList = List.generate(listCount["list${i + 1}"]!.length, (id) {
+            return Container(
+              margin: EdgeInsets.symmetric(
+                horizontal: value!.maxColumnAllowable != 1
+                    ? value.minHorizontalSpacing / 2
+                    : 0,
+                vertical: value.maxRowAllowable != 1
+                    ? value.minHorizontalSpacing / 2
+                    : 0,
+              ),
+              width: value.imageSize.width,
+              height: value.imageSize.height,
+              color: Colors.red,
+              child: Image.asset(
+                "assets/chinese.jpeg",
+                fit: BoxFit.cover,
+              ),
+            );
+          });
+          Row tempRow = Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [...colList],
+          );
+          rowList.add(tempRow);
+        }
+        if (value == null) {
+          return Container(
+            width: paperSize.width,
+            height: paperSize.height,
+            color: Colors.blue,
+            child: const Center(child: Text("No Data")),
+          );
+        } else {
+          if (value.printHorizontal) {
+            return Column(
+              children: [
+                Container(
+                  width: value.paperSize.height,
+                  height: value.paperSize.width,
+                  color: Colors.blue,
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ...List.generate(value.maxColumnAllowable, (index) {
-                        return Container(
-                          margin: EdgeInsets.symmetric(
-                            horizontal: value.maxColumnAllowable != 1
-                                ? value.minHorizontalSpacing
-                                : 0,
-                            vertical: value.maxRowAllowable != 1
-                                ? value.minHorizontalSpacing
-                                : 0,
-                          ),
-                          width: value.imageSize.width,
-                          height: value.imageSize.height,
-                          color: Colors.red,
-                          child: Image.asset(
-                            "assets/chinese.jpeg",
-                            fit: BoxFit.cover,
-                          ),
-                        );
-                      })
+                      ...rowList,
                     ],
-                  );
-                });
-                return Column(
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      width: value.paperSize.width,
-                      height: value.paperSize.height,
-                      color: Colors.blue,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          ...listt,
-                        ],
-                      ),
+                    IconButton(
+                        iconSize: 48,
+                        // color: Colors.yellow,
+                        onPressed: provider.minusCount,
+                        icon: const Icon(Icons.remove_circle)),
+                    Text(
+                      provider.imageCountInPaper.toString(),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 24),
                     ),
-                    Consumer<PrintingCountProvider>(
-                        builder: (ctx, provider, child) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                              iconSize: 48,
-                              // color: Colors.yellow,
-                              onPressed: provider.minusCount,
-                              icon: const Icon(Icons.remove_circle)),
-                          Text(
-                            provider.imageCountInPaper.toString(),
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 24),
-                          ),
-                          IconButton(
-                              // color: Colors.yellow,
-                              iconSize: 48,
-                              onPressed: provider.addCount,
-                              icon: const Icon(Icons.add_circle)),
-                        ],
-                      );
-                    })
+                    IconButton(
+                        // color: Colors.yellow,
+                        iconSize: 48,
+                        onPressed: provider.addCount,
+                        icon: const Icon(Icons.add_circle)),
                   ],
-                );
-              }
-            }
-          });
+                )
+              ],
+            );
+          } else {
+            return Column(
+              children: [
+                Container(
+                  width: value.paperSize.width,
+                  height: value.paperSize.height,
+                  color: Colors.blue,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ...rowList,
+                    ],
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                        iconSize: 48,
+                        // color: Colors.yellow,
+                        onPressed: provider.minusCount,
+                        icon: const Icon(Icons.remove_circle)),
+                    Text(
+                      provider.imageCountInPaper.toString(),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 24),
+                    ),
+                    IconButton(
+                        // color: Colors.yellow,
+                        iconSize: 48,
+                        onPressed: provider.addCount,
+                        icon: const Icon(Icons.add_circle)),
+                  ],
+                )
+              ],
+            );
+          }
+        }
+        return SizedBox();
+      });
     }
   }
 }
