@@ -2,8 +2,6 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:printer_image/model/model.dart';
-import 'dart:collection';
-import 'package:printer_image/services/snack_bar_service.dart';
 
 class PrintingCountProvider extends ChangeNotifier {
   PrintImageModel? _printImageModel;
@@ -20,6 +18,8 @@ class PrintingCountProvider extends ChangeNotifier {
   int get imagePerRow => _imagePerRow;
   int _imagePerColumn = 1;
   int get imagePerColumn => _imagePerColumn;
+  int _currentRow = 1;
+  int get currentRow => _currentRow;
   // Map<String, List> _mappy = {"list1": []};
   Map<String, List> _mappy = {};
   Map<String, List> get mappy => _mappy;
@@ -39,6 +39,11 @@ class PrintingCountProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  set currentRow(int row) {
+    _currentRow = row;
+    notifyListeners();
+  }
+
   set imagePerRow(int imageCount) {
     _imagePerRow = imageCount;
     notifyListeners();
@@ -55,23 +60,38 @@ class PrintingCountProvider extends ChangeNotifier {
   }
 
   void addCount() async {
+    log(currentRow.toString());
     if (_imageCountInPaper < _maxImage) {
-      int maxRows = printImageModel!.maxRowAllowable;
       int maxImageinRow = printImageModel!.maxColumnAllowable;
-      List? tempList = mappy["list$maxRows"];
-      if (tempList!.length < maxImageinRow) {
-        tempList = mappy["list$maxRows"];
+      List? tempList = mappy["list$currentRow"];
+      if (tempList!.length < maxImageinRow && tempList.isNotEmpty) {
+        log("here ${tempList}");
+        tempList = mappy["list$currentRow"];
+        if (tempList!.isEmpty) {
+          log("here2 ${tempList}");
+
+          currentRow = currentRow - 1;
+          tempList = mappy["list$currentRow"];
+          notifyListeners();
+        }
         int lastItemfromList = tempList!.last;
         tempList.add(lastItemfromList + 1);
-      } else if (tempList.length > maxImageinRow) {
-        tempList = mappy["list${maxRows + 1}"];
-        int lastItemfromList = tempList?.last;
-        tempList?.add(lastItemfromList + 1);
-      } else if (tempList.isEmpty) {
-        tempList = mappy["list${maxRows - 1}"];
+      } else if (tempList.length == maxImageinRow) {
+        tempList = mappy["list$currentRow"];
+        currentRow = currentRow + 1;
+
+        List? newtempList = mappy["list$currentRow"];
+        notifyListeners();
 
         int lastItemfromList = tempList!.last;
-        tempList.add(lastItemfromList + 1);
+        newtempList!.add(lastItemfromList + 1);
+      } else if (tempList.isEmpty) {
+        List? chekPreviousRow = mappy["list${currentRow - 1}"];
+        if (chekPreviousRow!.length == maxImageinRow) {
+          int lastItemfromList = chekPreviousRow.last;
+          tempList.add(lastItemfromList);
+          notifyListeners();
+        }
       }
 
       _imageCountInPaper++;
@@ -85,17 +105,21 @@ class PrintingCountProvider extends ChangeNotifier {
   }
 
   void minusCount() {
+    log(currentRow.toString());
     if (_imageCountInPaper < _minImage) {
       _imageCountInPaper = _minImage;
     } else if (_imageCountInPaper > _minImage) {
-      int maxRows = printImageModel!.maxRowAllowable;
-      if (mappy.containsKey("list$maxRows")) {
-        List? tempList = mappy["list$maxRows"];
-        if (tempList!.isEmpty) {
-          tempList = mappy["list${maxRows - 1}"];
+      List? tempList = mappy["list$currentRow"];
+      if (tempList!.isEmpty) {
+        if (currentRow == 1) {
+          currentRow = 1;
+        } else {
+          currentRow = currentRow - 1;
         }
-        tempList!.removeLast();
+        tempList = mappy["list$currentRow"];
+        notifyListeners();
       }
+      tempList!.removeLast();
 
       _imageCountInPaper--;
     } else {

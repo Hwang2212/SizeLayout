@@ -57,7 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
               // imageSize:
               // SizeModel(width: 600 / 2, height: 1200 / 2), // 35 x 50 mm
               imageSize:
-                  SizeModel(width: 420 / 2, height: 540 / 2), // 35 x 45 mm
+                  SizeModel(width: 800 / 2, height: 400 / 2), // 35 x 45 mm
             ),
           ],
         ),
@@ -83,7 +83,6 @@ class _MyHomePageState extends State<MyHomePage> {
         Map<String, List> t = {"list${i + 1}": tempList[i]};
         tempMap.addAll(t);
       }
-      log("TempMap ${tempMap.toString()}");
 
       // Notify Provider
       WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -93,6 +92,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 printImageModel.maxColumnAllowable;
         printingCountProvider.maxImage = printImageModel.maxRowAllowable *
             printImageModel.maxColumnAllowable;
+        printingCountProvider.currentRow =
+            printImageModel.maxRowAllowable; // Initialise Current Row
 
         printingCountProvider.mappy = tempMap;
       });
@@ -122,10 +123,10 @@ class _MyHomePageState extends State<MyHomePage> {
             return Container(
               margin: EdgeInsets.symmetric(
                 horizontal: value!.maxColumnAllowable != 1
-                    ? value.minHorizontalSpacing / 2
+                    ? value.minHorizontalSpacing
                     : 0,
                 vertical: value.maxRowAllowable != 1
-                    ? value.minHorizontalSpacing / 2
+                    ? value.minVerticalSpacing / 2
                     : 0,
               ),
               width: value.imageSize.width,
@@ -137,9 +138,14 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             );
           });
-          Row tempRow = Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [...colList],
+          Widget tempRow = Container(
+            color: Colors.green,
+            child: Row(
+              ///TODO::: check Here mainAxisAlignment
+              mainAxisAlignment: MainAxisAlignment.start,
+
+              children: [...colList],
+            ),
           );
           rowList.add(tempRow);
         }
@@ -153,8 +159,11 @@ class _MyHomePageState extends State<MyHomePage> {
         } else {
           if (value.printHorizontal) {
             return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 0),
                   width: value.paperSize.height,
                   height: value.paperSize.width,
                   color: Colors.blue,
@@ -189,6 +198,7 @@ class _MyHomePageState extends State<MyHomePage> {
             );
           } else {
             return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
                   width: value.paperSize.width,
