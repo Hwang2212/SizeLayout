@@ -59,6 +59,18 @@ class PrintingCountProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void initData(PrintImageModel imageModel, Map<String,List> mapList)async{
+      printImageModel =  imageModel;
+      imageCountInPaper =
+          imageModel.maxRowAllowable * imageModel.maxColumnAllowable;
+maxImage =
+          imageModel.maxRowAllowable * imageModel.maxColumnAllowable;
+      currentRow =
+          imageModel.maxRowAllowable; // Initialise Current Row
+
+      mappy = mapList;
+  }
+
   void addCount() async {
     // log(currentRow.toString());
     if (_imageCountInPaper < _maxImage) {

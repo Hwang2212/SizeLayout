@@ -7,8 +7,7 @@ class SizeHelper {
   /// [IMPORTANT] All Units must be in PIXELS
 
   // Preview Print to return certain info
-  Future<PrintImageModel> printPreview(
-      SizeModel paperSize, SizeModel imageSize) async {
+  PrintImageModel printPreview(SizeModel paperSize, SizeModel imageSize) {
     // Rearrange width and height where width < height
     SizeModel paper = rearrangeSize(paperSize);
     SizeModel image = rearrangeSize(imageSize);
@@ -51,18 +50,17 @@ class SizeHelper {
           maxRowAllowable: maxRowAllowable,
           imageFittable: imageFitCount);
     } else {
-      int imageFittable = await calculateImageFitable(paper, image);
+      int imageFittable = calculateImageFitable(paper, image);
 
       // double getPaperAspectRatio = await _calculatePaperAspectRatio(paper);
-      horizontal = await _verifyPaperOrientation(imageFittable);
+      horizontal = _verifyPaperOrientation(imageFittable);
       if (horizontal) {
         int imagePerColumnAllowable =
             (paper.width * 0.95 / image.height).floor();
         int imagePerRowAllowable = (paper.height * 0.95 / image.width).floor();
-        int maxRows =
-            await _calculateMaxRow(imageFittable, imagePerRowAllowable);
+        int maxRows = _calculateMaxRow(imageFittable, imagePerRowAllowable);
         int maxColumns =
-            await _calculateMaxColumn(imageFittable, imagePerColumnAllowable);
+            _calculateMaxColumn(imageFittable, imagePerColumnAllowable);
         log("ImageRow ${maxRows.toString()}");
         log("ImageColumns ${maxColumns.toString()}");
         int horizontalSpacing = ((paper.height * 0.05) / (maxColumns)).floor();
@@ -89,8 +87,7 @@ class SizeHelper {
   }
 
   // Image Count
-  Future<int> calculateImageFitable(
-      SizeModel paperSize, SizeModel imageSize) async {
+  int calculateImageFitable(SizeModel paperSize, SizeModel imageSize) {
     double minVerticalSpacing = 25;
     double minHorizontalSpacing = 10;
     double paperArea = _calculateArea(paperSize.width, paperSize.height);
@@ -104,20 +101,20 @@ class SizeHelper {
   }
 
   // Max Row Count
-  Future<int> _calculateMaxRow(int imageFittable, int imagePerRow) async {
+  int _calculateMaxRow(int imageFittable, int imagePerRow) {
     int rowAllowed = (imageFittable / imagePerRow).ceil();
 
     return rowAllowed;
   }
 
   // Max Column Count
-  Future<int> _calculateMaxColumn(int imageFittable, int imagePerColumn) async {
+  int _calculateMaxColumn(int imageFittable, int imagePerColumn) {
     int columnAllowed = (imageFittable / imagePerColumn).ceil();
 
     return columnAllowed;
   }
 
-  Future<bool> _verifyPaperOrientation(int count) async {
+  bool _verifyPaperOrientation(int count) {
     if (count > 4) {
       return true;
     } else {
