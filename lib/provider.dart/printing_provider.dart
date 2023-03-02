@@ -60,16 +60,13 @@ class PrintingCountProvider extends ChangeNotifier {
   }
 
   void addCount() async {
-    log(currentRow.toString());
+    // log(currentRow.toString());
     if (_imageCountInPaper < _maxImage) {
       int maxImageinRow = printImageModel!.maxColumnAllowable;
       List? tempList = mappy["list$currentRow"];
       if (tempList!.length < maxImageinRow && tempList.isNotEmpty) {
-        log("here ${tempList}");
         tempList = mappy["list$currentRow"];
         if (tempList!.isEmpty) {
-          log("here2 ${tempList}");
-
           currentRow = currentRow - 1;
           tempList = mappy["list$currentRow"];
           notifyListeners();
@@ -105,7 +102,7 @@ class PrintingCountProvider extends ChangeNotifier {
   }
 
   void minusCount() {
-    log(currentRow.toString());
+    // log(currentRow.toString());
     if (_imageCountInPaper < _minImage) {
       _imageCountInPaper = _minImage;
     } else if (_imageCountInPaper > _minImage) {

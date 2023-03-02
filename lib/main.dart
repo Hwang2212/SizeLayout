@@ -40,7 +40,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  ValueNotifier<PrintImageModel?> printImageModelNotifier = ValueNotifier(null);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,10 +53,8 @@ class _MyHomePageState extends State<MyHomePage> {
             buildPrintPreview(
               ///[TEST DIFFERENT IMAGE SIZE HERE] all in pixels
               paperSize: SizeModel(width: 1200 / 2, height: 1800 / 2),
-              // imageSize:
-              // SizeModel(width: 600 / 2, height: 1200 / 2), // 35 x 50 mm
               imageSize:
-                  SizeModel(width: 800 / 2, height: 400 / 2), // 35 x 45 mm
+                  SizeModel(width: 420 / 2, height: 600 / 2), // 35 x 45 mm
             ),
           ],
         ),
@@ -65,12 +62,12 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  // COPY WIDGET HERE
   Widget buildPrintPreview(
       {required SizeModel paperSize, required SizeModel imageSize}) {
     SizeHelper().printPreview(paperSize, imageSize).then((printImageModel) {
       PrintingCountProvider printingCountProvider =
           context.read<PrintingCountProvider>();
-      printImageModelNotifier.value = printImageModel;
       int rows = printImageModel.maxRowAllowable;
       int columns = printImageModel.maxColumnAllowable;
 
@@ -123,29 +120,27 @@ class _MyHomePageState extends State<MyHomePage> {
             return Container(
               margin: EdgeInsets.symmetric(
                 horizontal: value!.maxColumnAllowable != 1
-                    ? value.minHorizontalSpacing
+                    ? value.minHorizontalSpacing / 1.5
                     : 0,
                 vertical: value.maxRowAllowable != 1
-                    ? value.minVerticalSpacing / 2
+                    ? value.minVerticalSpacing / 1.5
                     : 0,
               ),
               width: value.imageSize.width,
               height: value.imageSize.height,
-              color: Colors.red,
+              // color: Colors.red,
+              // TODO:: CHANGE WIDGET HERE
               child: Image.asset(
                 "assets/chinese.jpeg",
                 fit: BoxFit.cover,
               ),
             );
           });
-          Widget tempRow = Container(
-            color: Colors.green,
-            child: Row(
-              ///TODO::: check Here mainAxisAlignment
-              mainAxisAlignment: MainAxisAlignment.start,
+          Widget tempRow = Row(
+            ///TODO::: check Here mainAxisAlignment
+            mainAxisAlignment: MainAxisAlignment.center,
 
-              children: [...colList],
-            ),
+            children: [...colList],
           );
           rowList.add(tempRow);
         }
@@ -160,10 +155,8 @@ class _MyHomePageState extends State<MyHomePage> {
           if (value.printHorizontal) {
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 0),
                   width: value.paperSize.height,
                   height: value.paperSize.width,
                   color: Colors.blue,
@@ -236,7 +229,6 @@ class _MyHomePageState extends State<MyHomePage> {
             );
           }
         }
-        return SizedBox();
       });
     }
   }

@@ -59,18 +59,23 @@ class SizeHelper {
         int imagePerColumnAllowable =
             (paper.width * 0.95 / image.height).floor();
         int imagePerRowAllowable = (paper.height * 0.95 / image.width).floor();
-        log(imagePerColumnAllowable.toString());
         int maxRows =
             await _calculateMaxRow(imageFittable, imagePerRowAllowable);
         int maxColumns =
             await _calculateMaxColumn(imageFittable, imagePerColumnAllowable);
         log("ImageRow ${maxRows.toString()}");
         log("ImageColumns ${maxColumns.toString()}");
+        int horizontalSpacing = ((paper.height * 0.05) / (maxColumns)).floor();
+
+        int verticalSpacing = ((paper.width * 0.05) / (maxRows + 1)).floor();
+
         return PrintImageModel(
             paperSize: paper,
             imageSize: image,
             printHorizontal: horizontal,
             maxColumnAllowable: maxColumns,
+            minHorizontalSpacing: horizontalSpacing.toDouble(),
+            minVerticalSpacing: verticalSpacing.toDouble(),
             maxRowAllowable: maxRows,
             imageFittable: imageFittable);
       } else {
@@ -94,7 +99,7 @@ class SizeHelper {
 
     int imageFitable = (paperArea * 0.90 / imageArea)
         .floor(); // Get the floor number eg: 7.82 ~= 7, 5.1 ~= 5
-    log("imageFitable $imageFitable");
+    log("ImageFitable $imageFitable");
     return imageFitable;
   }
 
