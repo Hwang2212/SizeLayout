@@ -17,35 +17,48 @@ class SizeHelper {
     horizontal = false;
 
     // Rotate paper to Vertical if image's height more than paper's width
-    if (image.height >= ((paper.width * 0.975) / 2)) {
+    if (image.height >= ((paper.width) / 2)) {
       // paper width > 1200 and image height > half of 95% paper's width
       int imageFitCount = 2;
       int maxRowAllowable = 2;
       int maxColumnAllowable = 2;
+      bool printHorizontal = false;
       if ((image.width) > ((paper.width * 0.95) / 2) &&
-          image.height < (paper.height * 0.975 / 2)) {
+          image.height <= (paper.height / 2) &&
+          image.height >= paper.width) {
         imageFitCount = 2;
         maxRowAllowable = 2;
         maxColumnAllowable = (imageFitCount / maxRowAllowable).floor();
+        printHorizontal = false;
       } else if ((image.width) > ((paper.width * 0.95) / 2) &&
-          image.height > (paper.height * 0.975 / 2)) {
-        imageFitCount = 1;
-        maxRowAllowable = 1;
-        maxColumnAllowable = (imageFitCount / maxRowAllowable).floor();
-      } else if ((image.width) < ((paper.width * 0.95) / 2) &&
-          image.height > (paper.height * 0.975 / 2)) {
+          image.height <= (paper.height / 2) &&
+          image.height < paper.width) {
         imageFitCount = 2;
         maxRowAllowable = 1;
         maxColumnAllowable = (imageFitCount / maxRowAllowable).floor();
+        printHorizontal = true;
+      } else if ((image.width) > ((paper.width * 0.95) / 2) &&
+          image.height > (paper.height / 2)) {
+        imageFitCount = 1;
+        maxRowAllowable = 1;
+        maxColumnAllowable = (imageFitCount / maxRowAllowable).floor();
+        printHorizontal = false;
+      } else if ((image.width) <= ((paper.width * 0.95) / 2) &&
+          image.height > (paper.height / 2)) {
+        imageFitCount = 2;
+        maxRowAllowable = 1;
+        maxColumnAllowable = (imageFitCount / maxRowAllowable).floor();
+        printHorizontal = false;
       } else {
         imageFitCount = 4;
         maxRowAllowable = 2;
         maxColumnAllowable = (imageFitCount / maxRowAllowable).floor();
+        printHorizontal = false;
       }
       return PrintImageModel(
           paperSize: paper,
           imageSize: image,
-          printHorizontal: false,
+          printHorizontal: printHorizontal,
           maxColumnAllowable: maxColumnAllowable,
           maxRowAllowable: maxRowAllowable,
           imageFittable: imageFitCount);
@@ -66,6 +79,12 @@ class SizeHelper {
         int horizontalSpacing = ((paper.height * 0.05) / (maxColumns)).floor();
 
         int verticalSpacing = ((paper.width * 0.05) / (maxRows + 1)).floor();
+        if (maxColumns * image.width >= paper.height) {
+          maxColumns = maxColumns - 1;
+        }
+        if (maxRows * image.height >= paper.width) {
+          maxRows = maxRows - 1;
+        }
 
         return PrintImageModel(
             paperSize: paper,

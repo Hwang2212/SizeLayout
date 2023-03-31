@@ -56,7 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ///[TEST DIFFERENT IMAGE SIZE HERE] all in pixels
                 paperSize: SizeModel(width: 1200 / 2, height: 1800 / 2),
                 imageSize:
-                    SizeModel(width: 420 / 2, height: 600 / 2), // 35 x 45 mm
+                    SizeModel(width: 420 / 2, height: 540 / 2), // 35 x 45 mm
               ),
             ],
           ),

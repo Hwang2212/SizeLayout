@@ -25,10 +25,10 @@ class _PrintPreviewWidgetState extends State<PrintPreviewWidget> {
       context.read<PrintingCountProvider>();
 
   @override
-  void initState()  {
+  void initState() {
     super.initState();
     PrintImageModel printImageModel =
-         SizeHelper().printPreview(paperSize, imageSize);
+        SizeHelper().printPreview(paperSize, imageSize);
     int rows = printImageModel.maxRowAllowable;
     int columns = printImageModel.maxColumnAllowable;
 
@@ -80,7 +80,7 @@ class _PrintPreviewWidgetState extends State<PrintPreviewWidget> {
                     ? value.minHorizontalSpacing / 1.5
                     : 0,
                 vertical: value.maxRowAllowable != 1
-                    ? value.minVerticalSpacing / 1.5
+                    ? value.minVerticalSpacing / 1.5 //Here
                     : 0,
               ),
               width: value.imageSize.width,
